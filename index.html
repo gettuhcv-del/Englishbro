@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>İngilizce Pro - Akıllı Havuz</title>
+    <title>İngilizce Pro - Kalıcı Hafıza</title>
     <style>
         :root { --ios-blue: #0A84FF; --ios-green: #30D158; --ios-red: #FF453A; --bg-black: #000; --card-bg: #1C1C1E; --star-gold: #FFD60A; }
         body { font-family: -apple-system, sans-serif; background: var(--bg-black); color: #fff; margin: 0; display: flex; flex-direction: row; min-height: 100vh; overflow: hidden; }
@@ -25,6 +25,7 @@
         #result { margin-top: 15px; padding: 15px; border-radius: 12px; display: none; font-weight: bold; }
         .correct { background: rgba(48, 209, 88, 0.2); color: #30D158; display: block !important; }
         .wrong { background: rgba(255, 69, 58, 0.2); color: #FF453A; display: block !important; }
+        .reset-btn { margin-top: 20px; color: #666; font-size: 12px; cursor: pointer; text-decoration: underline; }
         .wrong-panel { background: var(--card-bg); width: 100%; max-width: 450px; padding: 20px; border-radius: 20px; }
         #wrongList { list-style: none; padding: 0; text-align: left; }
         #wrongList li { padding: 10px; border-bottom: 1px solid #2C2C2E; font-size: 13px; color: #FF453A; }
@@ -37,7 +38,7 @@
     <div class="card">
         <div class="star-btn" id="starToggle" onclick="toggleStar()">★</div>
         <div class="stats">
-            <div style="color:var(--ios-blue)">Kalan: <span id="sRem">129</span></div>
+            <div style="color:var(--ios-blue)">Kalan: <span id="sRem">0</span></div>
             <div style="color:var(--ios-green)">Doğru: <span id="sCorrect">0</span></div>
             <div style="color:var(--ios-red)">Hata: <span id="sWrong">0</span></div>
         </div>
@@ -47,6 +48,7 @@
         <button class="btn" id="checkBtn" onclick="checkAnswer()">Kontrol Et</button>
         <div id="result"></div>
         <button class="btn btn-next" id="nextBtn" onclick="nextWord()">Sıradaki</button>
+        <div class="reset-btn" onclick="fullReset()">Her şeyi sıfırla ve baştan başla</div>
     </div>
     <div class="wrong-panel" id="wrongPanel" style="display:none;"><h4 style="color:var(--ios-red); margin:0 0 10px 0;">Hata Havuzu (Tur Sonu Sorulacak)</h4><ul id="wrongList"></ul></div>
 </div>
@@ -176,38 +178,62 @@ const data = [
     {ing: "Estimated", tr: "tahmin,tahmin edilen", en: "Estimated time.", tr_ex: "Tahmini süre."},
     {ing: "In fact", tr: "aslında,doğrusu", en: "In fact, yes.", tr_ex: "Aslında, evet."},
     {ing: "Herself", tr: "kendisi (kadın)", en: "She did it herself.", tr_ex: "Kendisi yaptı."},
-    {ing: "Grew", tr: "büyümek,yetişmek (geçmiş)", en: "Plants grew.", tr_ex: "Bitkiler büyüdü."},
+    {ing: "Grew", tr: "büyümek (geçmiş)", en: "Plants grew.", tr_ex: "Bitkiler büyüdü."},
     {ing: "Wait", tr: "beklemek", en: "Wait for me.", tr_ex: "Beni bekle."},
     {ing: "Reach", tr: "ulaşmak,erişmek,uzanmak", en: "Reach goal.", tr_ex: "Hedefe ulaşmak."},
     {ing: "Pick", tr: "seçmek,toplamak,ayıklamak", en: "Pick a card.", tr_ex: "Kart seç."},
     {ing: "Success", tr: "başarı", en: "Key to success.", tr_ex: "Başarı anahtarı."}
 ];
 
-let aktif = [...data], yanlislar = [], stats = {c:0}, currentIdx = -1;
+// Hafıza Yönetimi
+let aktif = JSON.parse(localStorage.getItem('aktifWords')) || [...data];
+let yanlislar = JSON.parse(localStorage.getItem('wrongWords')) || [];
+let stats = JSON.parse(localStorage.getItem('appStats')) || {c:0};
 let starredWords = JSON.parse(localStorage.getItem('starredWords')) || [];
+let currentIdx = -1;
 
-function saveStars() { localStorage.setItem('starredWords', JSON.stringify(starredWords)); updateStarPanel(); }
+function saveAll() {
+    localStorage.setItem('aktifWords', JSON.stringify(aktif));
+    localStorage.setItem('wrongWords', JSON.stringify(yanlislar));
+    localStorage.setItem('appStats', JSON.stringify(stats));
+    localStorage.setItem('starredWords', JSON.stringify(starredWords));
+}
+
+function fullReset() {
+    if(confirm("Tüm ilerlemen sıfırlanacak. Emin misin?")) {
+        localStorage.clear();
+        location.reload();
+    }
+}
+
 function toggleStar() {
     const item = aktif[currentIdx] || yanlislar[currentIdx];
     if(!item) return;
     const index = starredWords.indexOf(item.ing);
-    if (index > -1) { starredWords.splice(index, 1); document.getElementById('starToggle').classList.remove('star-active'); }
-    else { starredWords.push(item.ing); document.getElementById('starToggle').classList.add('star-active'); }
-    saveStars();
+    if (index > -1) { starredWords.splice(index, 1); }
+    else { starredWords.push(item.ing); }
+    saveAll();
+    updateStarPanel();
+    document.getElementById('starToggle').classList.toggle('star-active');
 }
+
 function updateStarPanel() {
     const p = document.getElementById('starPanelList'); p.innerHTML = "";
     starredWords.forEach(word => {
         const item = data.find(d => d.ing === word);
-        const div = document.createElement('div'); div.className = 'star-list-item';
-        div.innerHTML = `<b>${item.ing}</b>: ${item.tr}`;
-        p.appendChild(div);
+        if(item) {
+            const div = document.createElement('div'); div.className = 'star-list-item';
+            div.innerHTML = `<b>${item.ing}</b>: ${item.tr}`;
+            p.appendChild(div);
+        }
     });
 }
+
 function nextWord() {
     if (aktif.length === 0) {
-        if (yanlislar.length > 0) { alert("Ana liste bitti! Şimdi sadece hatalı kelimeleri soruyorum."); aktif = [...yanlislar]; yanlislar = []; }
-        else { alert("Mükemmel! Tüm kelimeler bitti."); aktif = [...data]; stats.c=0; }
+        if (yanlislar.length > 0) { alert("Hatalı kelimelere geçiliyor!"); aktif = [...yanlislar]; yanlislar = []; }
+        else { alert("Bravo! Her şey bitti. Liste sıfırlanıyor."); aktif = [...data]; stats.c=0; }
+        saveAll();
     }
     currentIdx = Math.floor(Math.random() * aktif.length);
     const item = aktif[currentIdx];
@@ -223,6 +249,7 @@ function nextWord() {
     updateStats();
     updateWrongListUI();
 }
+
 function checkAnswer() {
     const val = document.getElementById('userInput').value.toLowerCase().trim();
     const item = aktif[currentIdx];
@@ -234,17 +261,19 @@ function checkAnswer() {
         res.innerText = "DOĞRU: " + item.tr; res.className = "correct"; stats.c++; 
         aktif.splice(currentIdx, 1); 
     } else {
-        res.innerText = "YANLIŞ! Havuzdan çıktı, sona eklendi. Doğrusu: " + item.tr; res.className = "wrong";
+        res.innerText = "YANLIŞ! Havuzdan çıktı. Doğrusu: " + item.tr; res.className = "wrong";
         document.getElementById('trEx').innerText = "Cümle: " + item.tr_ex;
         document.getElementById('trEx').style.display = "block";
         const wordToMove = aktif.splice(currentIdx, 1)[0];
         if(!yanlislar.find(y => y.ing === wordToMove.ing)) yanlislar.push(wordToMove);
     }
+    saveAll();
     document.getElementById('checkBtn').style.display = 'none';
     document.getElementById('nextBtn').style.display = 'block';
     updateStats();
     updateWrongListUI();
 }
+
 function updateWrongListUI() {
     const listUI = document.getElementById('wrongList');
     document.getElementById('wrongPanel').style.display = yanlislar.length > 0 ? "block" : "none";
@@ -255,11 +284,13 @@ function updateWrongListUI() {
         listUI.appendChild(li);
     });
 }
+
 function updateStats() {
     document.getElementById('sCorrect').innerText = stats.c;
     document.getElementById('sWrong').innerText = yanlislar.length;
     document.getElementById('sRem').innerText = aktif.length;
 }
+
 function handleKeyPress(e) { if(e.key === 'Enter') (document.getElementById('checkBtn').style.display !== 'none') ? checkAnswer() : nextWord(); }
 updateStarPanel();
 nextWord();

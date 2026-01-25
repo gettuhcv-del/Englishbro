@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>İngilizce Pro - Yıldız Panelli</title>
+    <style>
+        :root { --ios-blue: #0A84FF; --ios-green: #30D158; --ios-red: #FF453A; --bg-black: #000; --card-bg: #1C1C1E; --star-gold: #FFD60A; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg-black); color: #fff; margin: 0; display: flex; flex-direction: row; min-height: 100vh; overflow: hidden; }
+        
+        /* Sol Yıldız Paneli */
+        .star-panel { width: 220px; background: #111; border-right: 1px solid #333; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; }
+        .star-panel h3 { color: var(--star-gold); font-size: 16px; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .star-list-item { font-size: 13px; padding: 8px; border-radius: 8px; margin-bottom: 5px; background: #1C1C1E; cursor: pointer; border: 1px solid #333; }
+        .star-list-item:hover { background: #2C2C2E; }
+
+        /* Ana İçerik */
+        .main-container { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; }
+        .card { background: var(--card-bg); padding: 25px; border-radius: 20px; width: 100%; max-width: 450px; text-align: center; margin-bottom: 20px; position: relative; }
+        
+        .stats { display: flex; justify-content: space-between; margin-bottom: 20px; background: #2C2C2E; border-radius: 12px; overflow: hidden; }
+        .stats div { padding: 10px; font-weight: bold; font-size: 12px; flex: 1; border-right: 1px solid #3A3A3C; }
+        
+        #word { font-size: 38px; font-weight: 800; margin: 15px 0; cursor: pointer; }
+        .is-starred { color: var(--star-gold) !important; }
+        .star-btn { position: absolute; top: 15px; right: 15px; font-size: 26px; cursor: pointer; color: #48484A; }
+        .star-active { color: var(--star-gold); }
+
+        #exampleDisplay { background: #2C2C2E; padding: 15px; border-radius: 10px; margin-bottom: 20px; min-height: 50px; font-size: 14px; }
+        #trEx { display: none; color: var(--ios-red); margin-top: 10px; }
+
+        input { width: 90%; padding: 15px; border: none; border-radius: 12px; font-size: 18px; text-align: center; background: #3A3A3C; color: white; margin-bottom: 10px; outline: none; }
+        .btn { background: var(--ios-green); color: white; border: none; padding: 16px; width: 100%; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        .btn-next { background: var(--ios-blue); margin-top: 10px; display: none; }
+        #result { margin-top: 15px; padding: 15px; border-radius: 12px; display: none; font-weight: bold; }
+        
+        .correct { background: rgba(48, 209, 88, 0.2); color: #30D158; display: block !important; }
+        .wrong { background: rgba(255, 69, 58, 0.2); color: #FF453A; display: block !important; }
+
+        .wrong-panel { background: var(--card-bg); width: 100%; max-width: 450px; padding: 20px; border-radius: 20px; }
+        #wrongList { list-style: none; padding: 0; text-align: left; }
+        #wrongList li { padding: 12px; border-bottom: 1px solid #2C2C2E; font-size: 13px; display: flex; justify-content: space-between; cursor: pointer; }
+        .starred-item { background: rgba(255, 214, 10, 0.1) !important; border-left: 3px solid var(--star-gold) !important; }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .star-panel { width: 100%; height: 120px; border-right: none; border-bottom: 1px solid #333; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="star-panel">
+    <h3>⭐ Yıldızlılar</h3>
+    <div id="starPanelList"></div>
+</div>
+
+<div class="main-container">
+    <div class="card">
+        <div class="star-btn" id="starToggle" onclick="toggleStar()">★</div>
+        <div class="stats">
+            <div style="color:var(--ios-blue)">Top: 129</div>
+            <div style="color:var(--ios-green)">D: <span id="sCorrect">0</span></div>
+            <div style="color:var(--ios-red)">Y: <span id="sWrong">0</span></div>
+            <div style="color:#aaa">K: <span id="sRem">129</span></div>
+        </div>
+        <div id="word" onclick="copyText(this.innerText)">...</div>
+        <div id="exampleDisplay"><span id="enEx"></span><div id="trEx"></div></div>
+        <input type="text" id="userInput" placeholder="Türkçesini yaz..." onkeypress="handleKeyPress(event)" autocomplete="off">
+        <button class="btn" id="checkBtn" onclick="checkAnswer()">Kontrol Et</button>
+        <div id="result"></div>
+        <button class="btn btn-next" id="nextBtn" onclick="nextWord()">Sıradaki</button>
+    </div>
+
+    <div class="wrong-panel" id="wrongPanel" style="display:none;">
+        <h4 style="color:var(--ios-red); margin:0 0 10px 0;">Hata Havuzu</h4>
+        <ul id="wrongList"></ul>
+    </div>
+</div>
+
+<script>
+const data = [
+    {ing: "Doubt", tr: "şüphe,kuşku,şüphelenmek", en: "I have no doubt.", tr_ex: "Hiç şüphem yok."},
+    {ing: "Kitten", tr: "kedi yavrusu", en: "The kitten is cute.", tr_ex: "Kedi yavrusu sevimlidir."},
+    {ing: "Paw", tr: "pati,pençe,ayak", en: "The cat's paw.", tr_ex: "Kedinin patisi."},
+    {ing: "Unwound", tr: "çözülmüş,açılmış,gevşemiş", en: "The rope unwound.", tr_ex: "İp çözüldü."},
+    {ing: "Carpet", tr: "halı,kilim,kaplamak", en: "Red carpet.", tr_ex: "Kırmızı halı."},
+    {ing: "Manners", tr: "terbiye,görgü kuralları,tavır", en: "Good manners.", tr_ex: "İyi terbiye."},
+    {ing: "Wonder", tr: "merak etmek,şaşırmak,mucize", en: "I wonder why.", tr_ex: "Nedenini merak ediyorum."},
+    {ing: "Melt", tr: "erimek,eritmek,yumuşamak", en: "Ice melts.", tr_ex: "Buz erir."},
+    {ing: "Mist", tr: "sis,pus,buğulanmak", en: "Morning mist.", tr_ex: "Sabah sisi."},
+    {ing: "Calmed", tr: "sakinleşmiş,yatışmış", en: "He calmed down.", tr_ex: "O sakinleşti."},
+    {ing: "Forward", tr: "ileri,ileriye doğru,iletmek", en: "Move forward.", tr_ex: "İleri hareket et."},
+    {ing: "Silently", tr: "sessizce,sessiz sessiz", en: "Walk silently.", tr_ex: "Sessizce yürü."},
+    {ing: "Brave", tr: "cesur,yiğit,meydan okumak", en: "A brave soldier.", tr_ex: "Cesur bir asker."},
+    {ing: "Groceries", tr: "mutfak alışverişi,erzak,bakkal", en: "Buy groceries.", tr_ex: "Mutfak alışverişi yap."},
+    {ing: "Seek", tr: "aramak,peşinde koşmak,çabalamak", en: "Seek help.", tr_ex: "Yardım ara."},
+    {ing: "Got injured", tr: "yaralandı,sakatlandı", en: "He got injured.", tr_ex: "O yaralandı."},
+    {ing: "consist of", tr: "oluşmak,ibaret olma,meydana gelmek", en: "Team consists of 3 people.", tr_ex: "Takım 3 kişiden oluşur."},
+    {ing: "Counter", tr: "saymak,tezgah,karşı koymak", en: "Kitchen counter.", tr_ex: "Mutfak tezgahı."},
+    {ing: "Fade", tr: "solmak,solgunlaşmak,kaybolmak", en: "Flowers fade.", tr_ex: "Çiçekler solar."},
+    {ing: "Besides", tr: "üstelik,yanı sıra,bundan başka", en: "Besides, it's cheap.", tr_ex: "Üstelik, ucuz."},
+    {ing: "Candle", tr: "mum", en: "Light a candle.", tr_ex: "Bir mum yak."},
+    {ing: "Ash", tr: "kül,dişbudak ağacı", en: "Ash and smoke.", tr_ex: "Kül ve duman."},
+    {ing: "Talented", tr: "yetenekli,kabiliyetli", en: "A talented boy.", tr_ex: "Yetenekli bir çocuk."},
+    {ing: "Frame", tr: "çerçeve,gövde,kurmak", en: "Photo frame.", tr_ex: "Fotoğraf çerçevesi."},
+    {ing: "Pieces", tr: "kısım,parçalar,tane", en: "In pieces.", tr_ex: "Parçalar halinde."},
+    {ing: "Even", tr: "hatta,bile,düz,çift", en: "Even now.", tr_ex: "Hatta şimdi."},
+    {ing: "Bother", tr: "rahatsız etmek,can sıkmak,zahmet", en: "Don't bother me.", tr_ex: "Beni rahatsız etme."},
+    {ing: "Across", tr: "karşısında,karşıdan karşıya", en: "Across the lake.", tr_ex: "Gölün karşısında."},
+    {ing: "Pretend", tr: "taklit,yapar gibi görünmek,numara yapmak", en: "Pretend to sleep.", tr_ex: "Uyuyor taklidi yap."},
+    {ing: "In other words", tr: "yani,başka bir deyişle", en: "In other words, no.", tr_ex: "Yani, hayır."},
+    {ing: "Since", tr: "den beri,çünkü,mademki", en: "Since morning.", tr_ex: "Sabahtan beri."},
+    {ing: "Dry", tr: "kuru,kurumak,kurutmak", en: "Dry air.", tr_ex: "Kuru hava."},
+    {ing: "Wear", tr: "giymek,takmak,eskimek", en: "Wear a coat.", tr_ex: "Palto giy."},
+    {ing: "Emotional", tr: "duygusal,duyarlı", en: "Emotional film.", tr_ex: "Duygusal film."},
+    {ing: "Beyond", tr: "ötesinde,ötesi,aşırı", en: "Beyond the wall.", tr_ex: "Duvarın ötesinde."},
+    {ing: "Until", tr: "e kadar,değin", en: "Until Monday.", tr_ex: "Pazartesiye kadar."},
+    {ing: "Convince", tr: "ikna etmek,inandırmak", en: "Convince him.", tr_ex: "Onu ikna et."},
+    {ing: "Shine", tr: "parlamak,ışıldamak,parlatmak", en: "Sun shines.", tr_ex: "Güneş parlar."},
+    {ing: "Savage", tr: "ağır,vahşi,yabani,zalim", en: "Savage blow.", tr_ex: "Ağır darbe."},
+    {ing: "Proposed", tr: "teklif etmek,önermek", en: "Proposed a plan.", tr_ex: "Plan teklif etti."},
+    {ing: "Witness", tr: "şahit,tanık,tanıklık etmek", en: "Eye witness.", tr_ex: "Görgü şahidi."},
+    {ing: "Opportunity", tr: "fırsat,uygun durum", en: "Great opportunity.", tr_ex: "Büyük fırsat."},
+    {ing: "Addiction", tr: "bağımlılık,tiryakilik", en: "Drug addiction.", tr_ex: "Bağımlılık."},
+    {ing: "Hill", tr: "tepe,yokuş", en: "Over the hill.", tr_ex: "Tepenin üzerinde."},
+    {ing: "Path", tr: "yol,patika,yörünge", en: "Forest path.", tr_ex: "Orman yolu."},
+    {ing: "Straight", tr: "dümdüz,doğruca,dürüst", en: "Straight line.", tr_ex: "Dümdüz çizgi."},
+    {ing: "Twists", tr: "bükme,kıvırmak,dönemeç", en: "Road twists.", tr_ex: "Yol bükülüyor."},
+    {ing: "Shape", tr: "şekil,form,biçimlendirmek", en: "Square shape.", tr_ex: "Kare şekli."},
+    {ing: "Thorn", tr: "diken", en: "Rose thorn.", tr_ex: "Gül dikeni."},
+    {ing: "Front of", tr: "önünde", en: "In front of you.", tr_ex: "Senin önünde."},
+    {ing: "Opposite", tr: "zıt,karşı,karşıt", en: "Opposite side.", tr_ex: "Zıt taraf."},
+    {ing: "Whole", tr: "tüm,bütün,tam", en: "Whole world.", tr_ex: "Tüm dünya."},
+    {ing: "Brook", tr: "dere,çay", en: "Mountain brook.", tr_ex: "Dağ deresi."},
+    {ing: "Square", tr: "kare,meydan,dik", en: "Square table.", tr_ex: "Kare masa."},
+    {ing: "Railway", tr: "demiryolu", en: "Railway station.", tr_ex: "Demiryolu istasyonu."},
+    {ing: "Sentence", tr: "cümle,hüküm,ceza", en: "Write a sentence.", tr_ex: "Bir cümle yaz."},
+    {ing: "Case", tr: "dava,vaka,durum,kasa", en: "Legal case.", tr_ex: "Hukuki dava."},
+    {ing: "Obsession", tr: "takıntı,saplantı", en: "Personal obsession.", tr_ex: "Kişisel takıntı."},
+    {ing: "Situation", tr: "durum,hal,mevki", en: "Current situation.", tr_ex: "Mevcut durum."},
+    {ing: "Jaw", tr: "çene", en: "Strong jaw.", tr_ex: "Güçlü çene."},
+    {ing: "Gotta", tr: "zorunluluk,meli malı", en: "I gotta go.", tr_ex: "Gitmem gerek."},
+    {ing: "I thought", tr: "sanmak,düşündüm", en: "I thought so.", tr_ex: "Öyle sandım."},
+    {ing: "Grabbed", tr: "kapmak,yakalamak,tutmak", en: "He grabbed it.", tr_ex: "Onu kaptı."},
+    {ing: "Behave", tr: "davranmak,uslu durmak", en: "Behave well.", tr_ex: "İyi davran."},
+    {ing: "Complain", tr: "şikayet etmek,yakınmak", en: "Don't complain.", tr_ex: "Şikayet etme."},
+    {ing: "Improve", tr: "geliştirmek,iyileştirmek", en: "Improve health.", tr_ex: "Sağlığı geliştir."},
+    {ing: "Define", tr: "tanımlamak,belirlemek", en: "Define success.", tr_ex: "Başarıyı tanımla."},
+    {ing: "As", tr: "olarak,gibi,iken", en: "Work as teacher.", tr_ex: "Öğretmen olarak çalış."},
+    {ing: "Drown", tr: "boğulmak,boğmak", en: "He might drown.", tr_ex: "Boğulabilir."},
+    {ing: "Otherwise", tr: "aksi taktirde,yoksa,başka türlü", en: "Leave, otherwise...", tr_ex: "Ayrıl, aksi taktirde..."},
+    {ing: "Employ", tr: "çalıştırmak,iş vermek", en: "Employ workers.", tr_ex: "İşçi çalıştır."},
+    {ing: "Hire", tr: "işe almak,kiralamak", en: "Hire a lawyer.", tr_ex: "Avukat tut."},
+    {ing: "Were", tr: "geçmiş zaman (be)", en: "They were happy.", tr_ex: "Onlar mutluydu."},
+    {ing: "Bug", tr: "böcek,hata,dinleme cihazı", en: "Small bug.", tr_ex: "Küçük böcek."},
+    {ing: "Whistle", tr: "düdük,ıslık çalmak", en: "Blow whistle.", tr_ex: "Düdüğü çal."},
+    {ing: "Afraid", tr: "korku,korkmuş", en: "I am afraid.", tr_ex: "Korkuyorum."},
+    {ing: "Bush", tr: "çalı,çalılık", en: "Behind the bush.", tr_ex: "Çalının arkasında."},
+    {ing: "Thin", tr: "ince,zayıf", en: "Thin book.", tr_ex: "İnce kitap."},
+    {ing: "Above", tr: "yukarı,üzerinde,yukarıda", en: "Above the sea.", tr_ex: "Denizin yukarısında."},
+    {ing: "Deer", tr: "geyik", en: "Wild deer.", tr_ex: "Yabani geyik."},
+    {ing: "Fat", tr: "şişman,yağ,kalın", en: "Fat cat.", tr_ex: "Şişman kedi."},
+    {ing: "Dare you", tr: "meydan okumak,cüret etmek", en: "I dare you.", tr_ex: "Sana meydan okuyorum."},
+    {ing: "Encourage", tr: "cesaretlendirmek,teşvik etmek", en: "Encourage him.", tr_ex: "Onu cesaretlendir."},
+    {ing: "Borrow", tr: "borç almak,ödünç almak", en: "Borrow money.", tr_ex: "Borç para al."},
+    {ing: "Compare", tr: "kıyaslamak,karşılaştırmak", en: "Compare costs.", tr_ex: "Maliyetleri kıyasla."},
+    {ing: "Carry", tr: "taşımak,getirmek,bulundurmak", en: "Carry the bag.", tr_ex: "Çantayı taşı."},
+    {ing: "Bring", tr: "getirmek,kazandırmak", en: "Bring some tea.", tr_ex: "Biraz çay getir."},
+    {ing: "Forbid", tr: "yasaklamak,men etmek", en: "Forbid entry.", tr_ex: "Girişi yasakla."},
+    {ing: "Compliment", tr: "iltifat,iltifat etmek", en: "Compliment.", tr_ex: "İltifat et."},
+    {ing: "Interview", tr: "röportaj,mülakat,görüşme", en: "Job interview.", tr_ex: "İş mülakatı."},
+    {ing: "Cage", tr: "kafes,hapse atmak", en: "Tiger cage.", tr_ex: "Kaplan kafesi."},
+    {ing: "Appear", tr: "görünmek,ortaya çıkmak", en: "Appear suddenly.", tr_ex: "Aniden görünmek."},
+    {ing: "While", tr: "iken,süre,oysa", en: "While working.", tr_ex: "Çalışırken."},
+    {ing: "Praise", tr: "övgü,methetmek", en: "High praise.", tr_ex: "Büyük övgü."},
+    {ing: "Beard", tr: "sakal", en: "Long beard.", tr_ex: "Uzun sakal."},
+    {ing: "Naughty", tr: "yaramaz,haylaz", en: "Naughty boy.", tr_ex: "Yaramaz çocuk."},
+    {ing: "Loudmouth", tr: "gürültücü,boşboğaz", en: "He is a loudmouth.", tr_ex: "O bir gürültücü."},
+    {ing: "Proud", tr: "gurur duymak,onurlu", en: "Proud of you.", tr_ex: "Seninle gurur duyuyorum."},
+    {ing: "Precious", tr: "kıymetli,değerli", en: "Precious gold.", tr_ex: "Kıymetli altın."},
+    {ing: "Stair", tr: "merdiven,basamak", en: "Up the stair.", tr_ex: "Merdivenden yukarı."},
+    {ing: "Nearly", tr: "neredeyse,hemen hemen", en: "Nearly finished.", tr_ex: "Neredeyse bitti."},
+    {ing: "Nervous", tr: "gergin,sinirli,heyecanlı", en: "Nervous person.", tr_ex: "Gergin kişi."},
+    {ing: "Hug", tr: "sarılmak,kucaklamak", en: "Give a hug.", tr_ex: "Kucakla."},
+    {ing: "Solution", tr: "çözüm,çözelti", en: "Easy solution.", tr_ex: "Kolay çözüm."},
+    {ing: "Solve", tr: "çözmek,halletmek", en: "Solve the case.", tr_ex: "Davayı çöz."},
+    {ing: "I suppose", tr: "sanmak,farz etmek", en: "I suppose so.", tr_ex: "Öyle sanıyorum."},
+    {ing: "Mirror", tr: "ayna,yansıtmak", en: "Look in mirror.", tr_ex: "Aynaya bak."},
+    {ing: "Tears", tr: "göz yaşı,yırtık", en: "Shed tears.", tr_ex: "Gözyaşı dök."},
+    {ing: "Manage", tr: "yönetmek,başarmak,idare etmek", en: "Manage shop.", tr_ex: "Dükkan yönet."},
+    {ing: "Foolish", tr: "aptalca,akılsızca", en: "Foolish idea.", tr_ex: "Aptalca fikir."},
+    {ing: "Hall", tr: "salon,koridor,hol", en: "End of hall.", tr_ex: "Koridorun sonu."},
+    {ing: "Hole", tr: "delik,çukur", en: "Deep hole.", tr_ex: "Derin delik."},
+    {ing: "Whisper", tr: "fısıltı,fısıldamak", en: "Low whisper.", tr_ex: "Alçak fısıltı."},
+    {ing: "Headache", tr: "baş ağrısı", en: "Bad headache.", tr_ex: "Baş ağrısı."},
+    {ing: "Fair", tr: "adil,panayır,sarışın", en: "Fair trade.", tr_ex: "Adil ticaret."},
+    {ing: "Expect", tr: "beklemek,ummak", en: "Expect arrival.", tr_ex: "Varışı beklemek."},
+    {ing: "Amount", tr: "miktar,tutar,toplam", en: "Small amount.", tr_ex: "Küçük miktar."},
+    {ing: "Toward", tr: "doğru,yönünde", en: "Toward city.", tr_ex: "Şehre doğru."},
+    {ing: "Benefit", tr: "fayda,yarar,çıkar", en: "Public benefit.", tr_ex: "Kamu yararı."},
+    {ing: "Jail", tr: "hapishane,hapse atmak", en: "In jail.", tr_ex: "Hapishanede."},
+    {ing: "Rear", tr: "arka,yetiştirmek,beslemek", en: "Rear door.", tr_ex: "Arka kapı."},
+    {ing: "Estimated", tr: "tahmin,tahmin edilen", en: "Estimated time.", tr_ex: "Tahmini süre."},
+    {ing: "In fact", tr: "aslında,doğrusu", en: "In fact, yes.", tr_ex: "Aslında, evet."},
+    {ing: "Herself", tr: "kendisi (kadın)", en: "She did it herself.", tr_ex: "Kendisi yaptı."},
+    {ing: "Grew", tr: "büyümek (geçmiş)", en: "Plants grew.", tr_ex: "Bitkiler büyüdü."},
+    {ing: "Wait", tr: "beklemek", en: "Wait for me.", tr_ex: "Beni bekle."},
+    {ing: "Reach", tr: "ulaşmak,erişmek,uzanmak", en: "Reach goal.", tr_ex: "Hedefe ulaşmak."},
+    {ing: "Pick", tr: "seçmek,toplamak,ayıklamak", en: "Pick a card.", tr_ex: "Kart seç."},
+    {ing: "Success", tr: "başarı", en: "Key to success.", tr_ex: "Başarı anahtarı."}
+];
+
+let aktif = [...data], yanlislar = [], stats = {c:0, w:0}, currentIdx = -1;
+let starredWords = JSON.parse(localStorage.getItem('starredWords')) || [];
+
+function saveStars() { localStorage.setItem('starredWords', JSON.stringify(starredWords)); updateStarPanel(); }
+
+function toggleStar() {
+    const item = aktif[currentIdx];
+    const index = starredWords.indexOf(item.ing);
+    if (index > -1) {
+        starredWords.splice(index, 1);
+        document.getElementById('starToggle').classList.remove('star-active');
+        document.getElementById('word').classList.remove('is-starred');
+    } else {
+        starredWords.push(item.ing);
+        document.getElementById('starToggle').classList.add('star-active');
+        document.getElementById('word').classList.add('is-starred');
+    }
+    saveStars();
+}
+
+function updateStarPanel() {
+    const p = document.getElementById('starPanelList');
+    p.innerHTML = "";
+    starredWords.forEach(word => {
+        const item = data.find(d => d.ing === word);
+        const div = document.createElement('div');
+        div.className = 'star-list-item';
+        div.innerHTML = `<b>${item.ing}</b>: ${item.tr}`;
+        div.onclick = () => navigator.clipboard.writeText(item.ing);
+        p.appendChild(div);
+    });
+}
+
+function copyText(txt) { navigator.clipboard.writeText(txt); }
+
+function nextWord() {
+    if (aktif.length === 0) {
+        if (yanlislar.length > 0) { alert("Yanlışlara geçiliyor."); aktif = [...yanlislar]; yanlislar = []; }
+        else { alert("Liste bitti."); aktif = [...data]; stats={c:0, w:0}; }
+    }
+    currentIdx = Math.floor(Math.random() * aktif.length);
+    const item = aktif[currentIdx];
+    const wordEl = document.getElementById('word');
+    const starEl = document.getElementById('starToggle');
+    wordEl.innerText = item.ing;
+    if (starredWords.includes(item.ing)) { wordEl.classList.add('is-starred'); starEl.classList.add('star-active'); }
+    else { wordEl.classList.remove('is-starred'); starEl.classList.remove('star-active'); }
+    document.getElementById('enEx').innerText = item.en;
+    document.getElementById('trEx').style.display = "none";
+    document.getElementById('userInput').value = "";
+    document.getElementById('result').style.display = 'none';
+    document.getElementById('nextBtn').style.display = 'none';
+    document.getElementById('checkBtn').style.display = 'block';
+    document.getElementById('userInput').focus();
+    updateStats();
+    updateWrongListUI();
+}
+
+function checkAnswer() {
+    const val = document.getElementById('userInput').value.toLowerCase().trim();
+    const item = aktif[currentIdx];
+    const res = document.getElementById('result');
+    const meanings = item.tr.split(',').map(m => m.trim().toLowerCase());
+    const isCorrect = meanings.some(m => val === m || (m.length > 2 && m.includes(val) && val.length > 2));
+
+    if (isCorrect) {
+        res.innerText = "DOĞRU: " + item.tr; res.className = "correct"; stats.c++; aktif.splice(currentIdx, 1);
+    } else {
+        res.innerText = "YANLIŞ: " + item.tr; res.className = "wrong"; stats.w++;
+        document.getElementById('trEx').innerText = "➜ " + item.tr_ex;
+        document.getElementById('trEx').style.display = "block";
+        if(!yanlislar.find(y => y.ing === item.ing)) yanlislar.push(item);
+    }
+    document.getElementById('checkBtn').style.display = 'none';
+    document.getElementById('nextBtn').style.display = 'block';
+    updateStats();
+    updateWrongListUI();
+}
+
+function updateWrongListUI() {
+    const listUI = document.getElementById('wrongList');
+    const panel = document.getElementById('wrongPanel');
+    listUI.innerHTML = "";
+    if (yanlislar.length > 0) {
+        panel.style.display = "block";
+        yanlislar.forEach(y => {
+            const li = document.createElement('li');
+            if (starredWords.includes(y.ing)) li.classList.add('starred-item');
+            li.innerHTML = `<span><b style="color:var(--ios-blue)">${y.ing}</b> ➜ ${y.tr}</span>`;
+            li.onclick = () => navigator.clipboard.writeText(y.ing);
+            listUI.appendChild(li);
+        });
+    } else { panel.style.display = "none"; }
+}
+
+function updateStats() {
+    document.getElementById('sCorrect').innerText = stats.c;
+    document.getElementById('sWrong').innerText = yanlislar.length;
+    document.getElementById('sRem').innerText = aktif.length;
+}
+
+function handleKeyPress(e) { if(e.key === 'Enter') (document.getElementById('checkBtn').style.display !== 'none') ? checkAnswer() : nextWord(); }
+updateStarPanel();
+nextWord();
+</script>
+</body>
+</html>

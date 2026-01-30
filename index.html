@@ -3,29 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>İngilizce Pro - Yıldızlı Sınav Modu</title>
+    <title>İngilizce Pro - Fix</title>
     <style>
         :root { --ios-blue: #0A84FF; --ios-green: #30D158; --ios-red: #FF453A; --bg-black: #000; --card-bg: #1C1C1E; --star-gold: #FFD60A; }
         body { font-family: -apple-system, sans-serif; background: var(--bg-black); color: #fff; margin: 0; display: flex; flex-direction: row; min-height: 100vh; overflow: hidden; }
-        
-        /* Sol Yıldız Paneli */
         .star-panel { width: 220px; background: #111; border-right: 1px solid #333; overflow-y: auto; padding: 15px; flex-shrink: 0; }
         .star-panel h3 { color: var(--star-gold); font-size: 16px; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
         .star-list-item { font-size: 13px; padding: 10px; border-radius: 8px; margin-bottom: 8px; background: #1C1C1E; border: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
         .remove-star { color: var(--ios-red); cursor: pointer; padding: 2px 5px; font-weight: bold; }
-
-        /* Ana İçerik */
         .main-container { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; position: relative; }
         .card { background: var(--card-bg); padding: 25px; border-radius: 20px; width: 100%; max-width: 420px; text-align: center; margin-top: 50px; position: relative; }
-        
-        /* Sağ Menü - Hizalama Güncellendi */
         .side-menu { position: absolute; right: 20px; top: 20px; display: flex; flex-direction: column; gap: 10px; width: 160px; }
         .part-btn { padding: 15px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; color: white; font-size: 13px; transition: 0.3s; opacity: 0.5; }
         .btn-star { background: var(--star-gold); color: #000; }
         .btn-p1 { background: var(--ios-blue); }
         .btn-p2 { background: var(--ios-green); }
         .part-btn.active { opacity: 1; border: 2px solid white; transform: scale(1.05); }
-
         .stats { display: flex; justify-content: space-between; margin-bottom: 20px; background: #2C2C2E; border-radius: 12px; overflow: hidden; }
         .stats div { padding: 10px; font-weight: bold; font-size: 11px; flex: 1; border-right: 1px solid #3A3A3C; }
         #word { font-size: 34px; font-weight: 800; margin: 15px 0; }
@@ -38,29 +31,17 @@
         .correct { background: rgba(48, 209, 88, 0.2); color: #30D158; display: block !important; }
         .wrong { background: rgba(255, 69, 58, 0.2); color: #FF453A; display: block !important; }
         .reset-btn { margin-top: 20px; color: #666; font-size: 11px; cursor: pointer; text-decoration: underline; }
-
-        @media (max-width: 900px) { 
-            body { flex-direction: column; } 
-            .star-panel { width: 100%; height: 120px; border-bottom: 1px solid #333; }
-            .side-menu { position: static; flex-direction: row; width: 100%; overflow-x: auto; padding: 10px; }
-            .side-menu .part-btn { flex-shrink: 0; min-width: 120px; }
-        }
+        @media (max-width: 900px) { body { flex-direction: column; } .star-panel { width: 100%; height: 120px; border-bottom: 1px solid #333; } .side-menu { position: static; flex-direction: row; width: 100%; overflow-x: auto; padding: 10px; } .side-menu .part-btn { flex-shrink: 0; min-width: 120px; } }
     </style>
 </head>
 <body>
-
-<div class="star-panel">
-    <h3>⭐ Yıldızlı Kelimeler</h3>
-    <div id="starPanelList"></div>
-</div>
-
+<div class="star-panel"><h3>⭐ Yıldızlı Kelimeler</h3><div id="starPanelList"></div></div>
 <div class="main-container">
     <div class="side-menu">
         <button class="part-btn btn-star" id="btnStar" onclick="switchPart('star')">⭐ Yıldızlılar</button>
         <button class="part-btn btn-p1" id="btnP1" onclick="switchPart(1)">Kısım 1 (129)</button>
         <button class="part-btn btn-p2" id="btnP2" onclick="switchPart(2)">Kısım 2 (Yeni)</button>
     </div>
-
     <div class="card">
         <div class="star-btn" id="starToggle" onclick="toggleStar()">★</div>
         <div class="stats">
@@ -73,47 +54,36 @@
         <button class="btn" id="checkBtn" onclick="checkAnswer()">Kontrol Et</button>
         <div id="result"></div>
         <button class="btn btn-next" id="nextBtn" onclick="nextWord()">Sıradaki</button>
-        <div class="reset-btn" onclick="fullReset()">İlerlemeyi Sıfırla</div>
+        <div class="reset-btn" onclick="fullReset()">Sıfırla</div>
     </div>
 </div>
-
 <script>
 const kisim1 = [
     {ing: "Doubt", tr: "şüphe,kuşku,şüphelenmek"}, {ing: "Kitten", tr: "kedi yavrusu"}, {ing: "Paw", tr: "pati,pençe,ayak"}, {ing: "Unwound", tr: "çözülmüş,açılmış,gevşemiş"}, {ing: "Carpet", tr: "halı,kilim,kaplamak"}, {ing: "Manners", tr: "terbiye,görgü kuralları,tavır"}, {ing: "Wonder", tr: "merak etmek,şaşırmak,mucize"}, {ing: "Melt", tr: "erimek,eritmek,yumuşamak"}, {ing: "Mist", tr: "sis,pus,buğulanmak"}, {ing: "Calmed", tr: "sakinleşmiş,yatışmış"}, {ing: "Forward", tr: "ileri,ileriye doğru,iletmek"}, {ing: "Silently", tr: "sessizce,sessiz sessiz"}, {ing: "Brave", tr: "cesur,yiğit,meydan okumak"}, {ing: "Groceries", tr: "mutfak alışverişi,erzak,bakkal"}, {ing: "Seek", tr: "aramak,peşinde koşmak,çabalamak"}, {ing: "Got injured", tr: "yaralandı,sakatlandı"}, {ing: "consist of", tr: "oluşmak,ibaret olma,meydana gelmek"}, {ing: "Counter", tr: "saymak,tezgah,karşı koymak"}, {ing: "Fade", tr: "solmak,solgunlaşmak,kaybolmak"}, {ing: "Besides", tr: "üstelik,yanı sıra,bundan başka"}, {ing: "Candle", tr: "mum"}, {ing: "Ash", tr: "kül,dişbudak ağacı"}, {ing: "Talented", tr: "yetenekli,kabiliyetli"}, {ing: "Frame", tr: "çerçeve,gövde,kurmak"}, {ing: "Pieces", tr: "kısım,parçalar,tane"}, {ing: "Even", tr: "hatta,bile,düz,çift"}, {ing: "Bother", tr: "rahatsız etmek,can sıkmak,zahmet"}, {ing: "Across", tr: "karşısında,karşıdan karşıya"}, {ing: "Pretend", tr: "taklit,yapar gibi görünmek,numara yapmak"}, {ing: "In other words", tr: "yani,başka bir deyişle"}, {ing: "Since", tr: "den beri,çünkü,mademki"}, {ing: "Dry", tr: "kuru,kurumak,kurutmak"}, {ing: "Wear", tr: "giymek,takmak,eskimek"}, {ing: "Emotional", tr: "duygusal,duyarlı"}, {ing: "Beyond", tr: "ötesinde,ötesi,aşırı"}, {ing: "Until", tr: "e kadar,değin"}, {ing: "Convince", tr: "ikna etmek,inandırmak"}, {ing: "Shine", tr: "parlamak,ışıldamak,parlatmak"}, {ing: "Savage", tr: "ağır,vahşi,yabani,zalim"}, {ing: "Proposed", tr: "teklif etmek,önermek"}, {ing: "Witness", tr: "şahit,tanık,tanıklık etmek"}, {ing: "Opportunity", tr: "fırsat,uygun durum"}, {ing: "Addiction", tr: "bağımlılık,tiryakilik"}, {ing: "Hill", tr: "tepe,yokuş"}, {ing: "Path", tr: "yol,patika,yörünge"}, {ing: "Straight", tr: "dümdüz,doğruca,dürüst"}, {ing: "Twists", tr: "bükme,kıvırmak,dönemeç"}, {ing: "Shape", tr: "şekil,form,biçimlendirmek"}, {ing: "Thorn", tr: "diken"}, {ing: "Front of", tr: "önünde"}, {ing: "Opposite", tr: "zıt,karşı,karşıt"}, {ing: "Whole", tr: "tüm,bütün,tam"}, {ing: "Brook", tr: "dere,çay"}, {ing: "Square", tr: "kare,meydan,dik"}, {ing: "Railway", tr: "demiryolu"}, {ing: "Sentence", tr: "cümle,hüküm,ceza"}, {ing: "Case", tr: "dava,vaka,durum,kasa"}, {ing: "Obsession", tr: "takıntı,saplantı"}, {ing: "Situation", tr: "durum,hal,mevki"}, {ing: "Jaw", tr: "çene"}, {ing: "Gotta", tr: "zorunluluk,meli malı"}, {ing: "I thought", tr: "sanmak,düşündüm"}, {ing: "Grabbed", tr: "kapmak,yakalamak,tutmak"}, {ing: "Behave", tr: "davranmak,uslu durmak"}, {ing: "Complain", tr: "şikayet etmek,yakınmak"}, {ing: "Improve", tr: "geliştirmek,iyileştirmek"}, {ing: "Define", tr: "tanımlamak,belirlemek"}, {ing: "As", tr: "olarak,gibi,iken"}, {ing: "Drown", tr: "boğulmak,boğmak"}, {ing: "Otherwise", tr: "aksi taktirde,yoksa,başka türlü"}, {ing: "Employ", tr: "çalıştırmak,iş vermek"}, {ing: "Hire", tr: "işe almak,kiralamak"}, {ing: "Were", tr: "geçmiş zaman (be)"}, {ing: "Bug", tr: "böcek,hata,dinleme cihazı"}, {ing: "Whistle", tr: "düdük,ıslık çalmak"}, {ing: "Afraid", tr: "korku,korkmuş"}, {ing: "Bush", tr: "çalı,çalılık"}, {ing: "Thin", tr: "ince,zayıf"}, {ing: "Above", tr: "yukarı,üzerinde,yukarıda"}, {ing: "Deer", tr: "geyik"}, {ing: "Fat", tr: "şişman,yağ,kalın"}, {ing: "Dare you", tr: "meydan okumak,cüret etmek"}, {ing: "Encourage", tr: "cesaretlendirmek,teşvik etmek"}, {ing: "Borrow", tr: "borç almak,ödünç almak"}, {ing: "Compare", tr: "kıyaslamak,karşılaştırmak"}, {ing: "Carry", tr: "taşımak,getirmek,bulundurmak"}, {ing: "Bring", tr: "getirmek,kazandırmak"}, {ing: "Forbid", tr: "yasaklamak,men etmek"}, {ing: "Compliment", tr: "iltifat,iltifat etmek"}, {ing: "Interview", tr: "röportaj,mülakat,görüşme"}, {ing: "Cage", tr: "kafes,hapse atmak"}, {ing: "Appear", tr: "görünmek,ortaya çıkmak"}, {ing: "While", tr: "iken,süre,oysa"}, {ing: "Praise", tr: "övgü,methetmek"}, {ing: "Beard", tr: "sakal"}, {ing: "Naughty", tr: "yaramaz,haylaz"}, {ing: "Loudmouth", tr: "gürültücü,boşboğaz"}, {ing: "Proud", tr: "gurur duymak,onurlu"}, {ing: "Precious", tr: "kıymetli,değerli"}, {ing: "Stair", tr: "merdiven,basamak"}, {ing: "Nearly", tr: "neredeyse,hemen hemen"}, {ing: "Nervous", tr: "gergin,sinirli,heyecanlı"}, {ing: "Hug", tr: "sarılmak,kucaklamak"}, {ing: "Solution", tr: "çözüm,çözelti"}, {ing: "Solve", tr: "çözmek,halletmek"}, {ing: "I suppose", tr: "sanmak,farz etmek"}, {ing: "Mirror", tr: "ayna,yansıtmak"}, {ing: "Tears", tr: "göz yaşı,yırtık"}, {ing: "Manage", tr: "yönetmek,başarmak,idare etmek"}, {ing: "Foolish", tr: "aptalca,akılsızca"}, {ing: "Hall", tr: "salon,koridor,hol"}, {ing: "Hole", tr: "delik,çukur"}, {ing: "Whisper", tr: "fısıltı,fısıldamak"}, {ing: "Headache", tr: "baş ağrısı"}, {ing: "Fair", tr: "adil,panayır,sarışın"}, {ing: "Expect", tr: "beklemek,ummak"}, {ing: "Amount", tr: "miktar,tutar,toplam"}, {ing: "Toward", tr: "doğru,yönünde"}, {ing: "Benefit", tr: "fayda,yarar,çıkar"}, {ing: "Jail", tr: "hapishane,hapse atmak"}, {ing: "Rear", tr: "arka,yetiştirmek,beslemek"}, {ing: "Estimated", tr: "tahmin,tahmin edilen"}, {ing: "In fact", tr: "aslında,doğrusu"}, {ing: "Herself", tr: "kendisi (kadın)"}, {ing: "Grew", tr: "büyümek (geçmiş)"}, {ing: "Wait", tr: "beklemek"}, {ing: "Reach", tr: "ulaşmak,erişmek,uzanmak"}, {ing: "Pick", tr: "seçmek,toplamak,ayıklamak"}, {ing: "Success", tr: "başarı"}
 ];
-
 const kisim2 = [
     {ing: "advantage", tr: "avantaj"}, {ing: "invest", tr: "yatırım"}, {ing: "for example", tr: "örnek olarak"}, {ing: "currently", tr: "şu anda"}, {ing: "environment", tr: "çevre"}, {ing: "excited", tr: "heyecanlı"}, {ing: "journey", tr: "seyahat"}, {ing: "recommend", tr: "tavsiye etmek"}, {ing: "spend", tr: "harcamak"}, {ing: "complicated", tr: "karmaşık"}, {ing: "goal", tr: "hedef"}, {ing: "conversation", tr: "konuşma"}, {ing: "avoid", tr: "kaçınmak"}, {ing: "depend on", tr: "bağlı olmak"}, {ing: "interupt", tr: "sözünü kesmek"}, {ing: "awkward", tr: "garip"}, {ing: "frustrated", tr: "sıkılmış, sinir olmuş"}, {ing: "flexible", tr: "esnek"}, {ing: "confident", tr: "kendine güvenmek"}, {ing: "independent", tr: "bağımsız"}, {ing: "efficient", tr: "verimli"}, {ing: "boundaries", tr: "sınır"}
 ];
-
 let currentPart = localStorage.getItem('currentPart') || 1;
 let starredWords = JSON.parse(localStorage.getItem('starredWords')) || [];
-let aktif = [];
-let yanlislar = [];
-let stats = {c:0};
-let currentIdx = -1;
+let aktif = [], yanlislar = [], stats = {c:0}, currentIdx = -1;
 
 function switchPart(part) {
     currentPart = part;
     if(part === 'star') {
-        const fullList = [...kisim1, ...kisim2];
-        aktif = fullList.filter(item => starredWords.includes(item.ing));
-        if(aktif.length === 0) { alert("Henüz yıldızlı kelimen yok!"); switchPart(1); return; }
+        const full = [...kisim1, ...kisim2];
+        aktif = full.filter(i => starredWords.includes(i.ing));
+        if(aktif.length === 0) { alert("Yıldızlı kelime yok!"); switchPart(1); return; }
     } else {
         aktif = JSON.parse(localStorage.getItem(`aktif_p${part}`)) || (part == 1 ? [...kisim1] : [...kisim2]);
     }
-    
     yanlislar = JSON.parse(localStorage.getItem(`wrong_p${part}`)) || [];
     stats = JSON.parse(localStorage.getItem(`stats_p${part}`)) || {c:0};
-    
     document.getElementById('btnStar').classList.toggle('active', part === 'star');
     document.getElementById('btnP1').classList.toggle('active', part == 1);
     document.getElementById('btnP2').classList.toggle('active', part == 2);
-    
-    saveAll();
-    nextWord();
+    saveAll(); nextWord();
 }
-
 function saveAll() {
     localStorage.setItem('currentPart', currentPart);
     localStorage.setItem('starredWords', JSON.stringify(starredWords));
@@ -123,37 +93,10 @@ function saveAll() {
         localStorage.setItem(`stats_p${currentPart}`, JSON.stringify(stats));
     }
 }
-
-function removeStarredWord(wordIng) {
-    starredWords = starredWords.filter(w => w !== wordIng);
-    saveAll(); updateStarPanel();
-    if(currentPart === 'star') switchPart('star');
-}
-
-function toggleStar() {
-    const item = aktif[currentIdx]; if(!item) return;
-    if (starredWords.includes(item.ing)) starredWords = starredWords.filter(w => w !== item.ing);
-    else starredWords.push(item.ing);
-    saveAll(); updateStarPanel();
-    document.getElementById('starToggle').classList.toggle('star-active');
-}
-
-function updateStarPanel() {
-    const p = document.getElementById('starPanelList'); p.innerHTML = "";
-    starredWords.forEach(word => {
-        const item = [...kisim1, ...kisim2].find(d => d.ing === word);
-        if(item) {
-            const div = document.createElement('div'); div.className = 'star-list-item';
-            div.innerHTML = `<span><b>${item.ing}</b>: ${item.tr}</span><span class="remove-star" onclick="removeStarredWord('${item.ing}')">✕</span>`;
-            p.appendChild(div);
-        }
-    });
-}
-
 function nextWord() {
     if (aktif.length === 0) {
-        if (yanlislar.length > 0) { alert("Hatalar tekrar ediliyor."); aktif = [...yanlislar]; yanlislar = []; }
-        else { alert("Bitti!"); switchPart(currentPart); }
+        if (yanlislar.length > 0) { aktif = [...yanlislar]; yanlislar = []; }
+        else { aktif = (currentPart == 1 ? [...kisim1] : [...kisim2]); stats.c = 0; }
     }
     currentIdx = Math.floor(Math.random() * aktif.length);
     const item = aktif[currentIdx];
@@ -166,43 +109,38 @@ function nextWord() {
     document.getElementById('userInput').focus();
     updateStats();
 }
-
 function checkAnswer() {
     const val = document.getElementById('userInput').value.toLowerCase().trim();
     const item = aktif[currentIdx];
     const meanings = item.tr.split(',').map(m => m.trim().toLowerCase());
     const isCorrect = meanings.some(m => val === m || (m.length > 3 && m.includes(val)));
     const res = document.getElementById('result');
-
-    if (isCorrect) {
-        res.innerText = "DOĞRU: " + item.tr; res.className = "correct"; stats.c++; 
-        aktif.splice(currentIdx, 1); 
-    } else {
-        res.innerText = "YANLIŞ! Doğrusu: " + item.tr; res.className = "wrong";
-        const wMove = aktif.splice(currentIdx, 1)[0];
-        if(!yanlislar.find(y => y.ing === wMove.ing)) yanlislar.push(wMove);
-    }
-    saveAll();
-    document.getElementById('checkBtn').style.display = 'none';
-    document.getElementById('nextBtn').style.display = 'block';
-    updateStats();
+    if (isCorrect) { res.innerText = "DOĞRU: " + item.tr; res.className = "correct"; stats.c++; aktif.splice(currentIdx, 1); }
+    else { res.innerText = "YANLIŞ! Doğrusu: " + item.tr; res.className = "wrong"; const wMove = aktif.splice(currentIdx, 1)[0]; if(!yanlislar.find(y => y.ing === wMove.ing)) yanlislar.push(wMove); }
+    saveAll(); document.getElementById('checkBtn').style.display = 'none'; document.getElementById('nextBtn').style.display = 'block'; updateStats();
 }
-
-function updateStats() {
-    document.getElementById('sCorrect').innerText = stats.c;
-    document.getElementById('sWrong').innerText = yanlislar.length;
-    document.getElementById('sRem').innerText = aktif.length;
+function updateStats() { document.getElementById('sCorrect').innerText = stats.c; document.getElementById('sWrong').innerText = yanlislar.length; document.getElementById('sRem').innerText = aktif.length; }
+function toggleStar() {
+    const item = aktif[currentIdx]; if(!item) return;
+    if (starredWords.includes(item.ing)) starredWords = starredWords.filter(w => w !== item.ing);
+    else starredWords.push(item.ing);
+    saveAll(); updateStarPanel(); document.getElementById('starToggle').classList.toggle('star-active');
 }
-
-function fullReset() {
-    if(confirm("İlerleme sıfırlanacak. Emin misin?")) {
-        localStorage.clear(); location.reload();
-    }
+function updateStarPanel() {
+    const p = document.getElementById('starPanelList'); p.innerHTML = "";
+    starredWords.forEach(word => {
+        const item = [...kisim1, ...kisim2].find(d => d.ing === word);
+        if(item) {
+            const div = document.createElement('div'); div.className = 'star-list-item';
+            div.innerHTML = `<span><b>${item.ing}</b>: ${item.tr}</span><span class="remove-star" onclick="removeStarredWord('${item.ing}')">✕</span>`;
+            p.appendChild(div);
+        }
+    });
 }
-
+function removeStarredWord(w) { starredWords = starredWords.filter(x => x !== w); saveAll(); updateStarPanel(); if(currentPart === 'star') switchPart('star'); }
+function fullReset() { if(confirm("Sıfırlansın mı?")) { localStorage.clear(); location.reload(); } }
 function handleKeyPress(e) { if(e.key === 'Enter') (document.getElementById('checkBtn').style.display !== 'none') ? checkAnswer() : nextWord(); }
-updateStarPanel();
-switchPart(currentPart);
+updateStarPanel(); switchPart(currentPart);
 </script>
 </body>
 </html>

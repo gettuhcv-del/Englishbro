@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>İngilizce Pro - Kısım 2 Tam</title>
+    <title>İngilizce Pro - Kısım 2 Güncel (71 Kelime)</title>
     <style>
         :root { --ios-blue: #0A84FF; --ios-green: #30D158; --ios-red: #FF453A; --bg-black: #000; --card-bg: #1C1C1E; --star-gold: #FFD60A; }
         body { font-family: -apple-system, sans-serif; background: var(--bg-black); color: #fff; margin: 0; display: flex; flex-direction: row; min-height: 100vh; overflow: hidden; }
@@ -40,7 +40,7 @@
     <div class="side-menu">
         <button class="part-btn btn-star" id="btnStar" onclick="switchPart('star')">⭐ Yıldızlılar</button>
         <button class="part-btn btn-p1" id="btnP1" onclick="switchPart(1)">Kısım 1 (129)</button>
-        <button class="part-btn btn-p2" id="btnP2" onclick="switchPart(2)">Kısım 2 (46)</button>
+        <button class="part-btn btn-p2" id="btnP2" onclick="switchPart(2)">Kısım 2 (71)</button>
     </div>
     <div class="card">
         <div class="star-btn" id="starToggle" onclick="toggleStar()">★</div>
@@ -63,7 +63,8 @@ const kisim1 = [
 ];
 const kisim2 = [
     {ing: "advantage", tr: "avantaj"}, {ing: "invest", tr: "yatırım"}, {ing: "for example", tr: "örnek olarak"}, {ing: "currently", tr: "şu anda"}, {ing: "environment", tr: "çevre"}, {ing: "excited", tr: "heyecanlı"}, {ing: "journey", tr: "seyahat"}, {ing: "recommend", tr: "tavsiye etmek"}, {ing: "spend", tr: "harcamak"}, {ing: "complicated", tr: "karmaşık"}, {ing: "goal", tr: "hedef"}, {ing: "conversation", tr: "konuşma"}, {ing: "avoid", tr: "kaçınmak"}, {ing: "depend on", tr: "bağlı olmak"}, {ing: "interupt", tr: "sözünü kesmek"}, {ing: "awkward", tr: "garip"}, {ing: "frustrated", tr: "sıkılmış, sinir olmuş"}, {ing: "flexible", tr: "esnek"}, {ing: "confident", tr: "kendine güvenmek"}, {ing: "independent", tr: "bağımsız"}, {ing: "efficient", tr: "verimli"}, {ing: "boundaries", tr: "sınır"},
-    {ing: "on sale", tr: "indirim"}, {ing: "Shirt", tr: "gömlek"}, {ing: "Throne", tr: "taht"}, {ing: "Might", tr: "belki,güç"}, {ing: "Awful", tr: "berbat"}, {ing: "Determine", tr: "kararlaştırmak"}, {ing: "Serve", tr: "servis"}, {ing: "Forced", tr: "zoraki"}, {ing: "Discuss", tr: "tartışmak,görüşmek"}, {ing: "Rebellion", tr: "isyan"}, {ing: "Represent", tr: "temsil etmek"}, {ing: "Recruits", tr: "acemi"}, {ing: "Mutual", tr: "karşılıklı,ortak"}, {ing: "Inspire", tr: "ilham vermek"}, {ing: "Bunch", tr: "deste,düzine"}, {ing: "Recover", tr: "iyileşmek,kurtarmak"}, {ing: "cover", tr: "örtmek,korumak"}, {ing: "approach", tr: "yaklaşma"}, {ing: "able", tr: "hünerli,yapabilir"}, {ing: "Vault", tr: "kasa,mahzen"}, {ing: "Remain", tr: "kalmak"}, {ing: "Coincidence", tr: "tesadüf"}, {ing: "crowd", tr: "kalabalık"}, {ing: "been", tr: "olmak,olmuş"}
+    {ing: "on sale", tr: "indirim"}, {ing: "Shirt", tr: "gömlek"}, {ing: "Throne", tr: "taht"}, {ing: "Might", tr: "belki,güç"}, {ing: "Awful", tr: "berbat"}, {ing: "Determine", tr: "kararlaştırmak"}, {ing: "Serve", tr: "servis"}, {ing: "Forced", tr: "zoraki"}, {ing: "Discuss", tr: "tartışmak,görüşmek"}, {ing: "Rebellion", tr: "isyan"}, {ing: "Represent", tr: "temsil etmek"}, {ing: "Recruits", tr: "acemi"}, {ing: "Mutual", tr: "karşılıklı,ortak"}, {ing: "Inspire", tr: "ilham vermek"}, {ing: "Bunch", tr: "deste,düzine"}, {ing: "Recover", tr: "iyileşmek,kurtarmak"}, {ing: "cover", tr: "örtmek,korumak"}, {ing: "approach", tr: "yaklaşma"}, {ing: "able", tr: "hünerli,yapabilir"}, {ing: "Vault", tr: "kasa,mahzen"}, {ing: "Remain", tr: "kalmak"}, {ing: "Coincidence", tr: "tesadüf"}, {ing: "crowd", tr: "kalabalık"}, {ing: "been", tr: "olmak,olmuş"},
+    {ing: "we'll figure", tr: "çözeceğiz,halledeceğiz"}, {ing: "river", tr: "nehir"}, {ing: "facility", tr: "tesis"}, {ing: "I owe you", tr: "sana borçlandım"}, {ing: "unless", tr: "if not"}, {ing: "mindless", tr: "dikkatsizce,akılsızca"}, {ing: "outpost", tr: "karakol"}, {ing: "scramble", tr: "çırpmak,mücadele vermek"}, {ing: "expanded", tr: "genişletilmiş"}, {ing: "entrance", tr: "giriş"}, {ing: "exclusive", tr: "özel,ayrıcalıklı"}, {ing: "Includes", tr: "içerir"}, {ing: "way out", tr: "çıkış yolu"}, {ing: "pointed", tr: "işaret etmek"}, {ing: "skirt", tr: "etek"}, {ing: "captivate", tr: "büyülenmek"}, {ing: "flames", tr: "alevler"}, {ing: "summoned", tr: "çağırmak"}, {ing: "bury", tr: "gömmek"}, {ing: "knowledge", tr: "bilgi"}, {ing: "accident", tr: "kaza"}, {ing: "except", tr: "hariç"}, {ing: "fields", tr: "tarla"}, {ing: "arrive", tr: "yaklaşma"}, {ing: "dwarf", tr: "cüce"}
 ];
 let currentPart = localStorage.getItem('currentPart') || 1;
 let starredWords = JSON.parse(localStorage.getItem('starredWords')) || [];
